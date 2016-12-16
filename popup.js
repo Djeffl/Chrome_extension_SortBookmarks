@@ -44,7 +44,7 @@ function setCategories() {
 }
 
 //Create btn for tabledata
-function createBtnTd(textBtn, func){
+function createBtnTd(textBtn){
     var td, btn;
     td = document.createElement('td');
     btn = document.createElement('button');
@@ -55,9 +55,56 @@ function createBtnTd(textBtn, func){
 function deleteBtn(row){
     row.parentNode.removeChild(row);
 }
-function editBtn(row){
-    console.log(row.childNodes);
-    
+
+//remove the elements from the inside and replace them with new elements so u can edit
+function editButton(row){
+    let editfield, text, btnOk,td;
+    var category;
+
+    editfield = document.createElement('input');
+    td = document.createElement("td");
+    td.appendChild(editfield);
+    editfield.type= "text";
+
+    btnOk = createBtnTd("Ok");
+    category = row.firstChild.firstChild.innerHTML;
+    text = row.firstChild;
+    while(text != null){
+        row.removeChild(text);
+        text = row.firstChild;
+    }
+    //Set the editfield which will be generated to the current string which u want to edit
+    editfield.value = category;
+    row.appendChild(td);
+    row.appendChild(btnOk);
+    btnOk.addEventListener('click', function() {
+        //value inputfield
+        let editVal = this.parentNode.firstChild.firstChild.value;
+        //remove again all nodes and append again
+        while(row.firstChild != null){
+            row.removeChild(row.firstChild);
+        }
+        let data = document.createElement('td');
+        let category = document.createElement('p');
+        category.innerHTML = editVal;
+        data.appendChild(category);
+        delBtn = createBtnTd("Delete");
+
+        editBtn = createBtnTd("Edit");
+        
+        row.appendChild(data);
+        row.appendChild(delBtn);
+        row.appendChild(editBtn);
+
+        //Eventlisteners for buttons again
+        delBtn.addEventListener('click', function() {
+                deleteBtn(row);       
+            });
+        editBtn.addEventListener('click', function() {
+            editButton(row);       
+        });
+             
+    });
 }
 
 //Performance lose beacause u create everytime a new btn 
@@ -92,10 +139,15 @@ function getCategories() {
     chrome.storage.local.get('categories', function(result){
         items = result.categories;
         for(let i = 0; i < items.length-1; i++){
+            //Add a new row for each category
             let row = addRow(items[i]);
             let delBtn = row.childNodes[1].firstChild;
+            let editBtn = row.childNodes[2].firstChild;
             delBtn.addEventListener('click', function() {
                 deleteBtn(row);       
+            });
+            editBtn.addEventListener('click', function() {
+                editButton(row);       
             });
             listItems.appendChild(row);
         }
