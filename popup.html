@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+  <head>
+    <title>Getting Started Extension's Popup</title>
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    <div id="bookmarks">
+    <h3>Categories:</h3> 
+    <table id="categoriesList">
+    </table>
+      <h3>Add new category: </h3>
+      <input id="newCategory" type="text" />
+      <button id="addBtn">Add</button>
+      <button id="saveChgBtn">Save changes </button> 
+    </div>
+
+  </body>
+</html>
