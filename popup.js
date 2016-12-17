@@ -1,5 +1,10 @@
 //global variables
 var listItems, items;
+
+var bookmarks = [];
+var cats = [];
+
+
 //Add eventListener to button onclick => Inline javascript == onclick() && inline javascript == forbidden
 document.addEventListener('DOMContentLoaded', function() {
     //init globals here
@@ -7,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     listItems = document.getElementById("categoriesList");
     var addButton = document.getElementById('addBtn');
     var saveChangesButton = document.getElementById('saveChgBtn');
+    var createbookmarksButton = document.getElementById('createBmBtn');
     // onClick's logic:
     //For addButton => add new category
     addButton.addEventListener('click', function() {
@@ -16,17 +22,18 @@ document.addEventListener('DOMContentLoaded', function() {
     saveChangesButton.addEventListener('click', function(){
         setCategories();
     })
+    createbookmarksButton.addEventListener('click', function(){
+        createBookMarks();
+    })
 });
 
 
 window.onload = function() {
     getCategories();
-    bookmarksprint();
-    createBookMark();
-    
+    bookmarksprint();    
 }
 
-var bookmarks = [], cats = [];
+
 
 function BookMark(){
     this.dateAdded;
@@ -70,41 +77,29 @@ function bookmarksprint(){
          });
     });
 }
-//Old method
-// function printBookmarks(id) {
-//   var output = "<ul>";
-//  chrome.bookmarks.getChildren(id, function(children) {
-//     children.forEach(function(bookmark) {
-//       output+= "<li>" + bookmark.name + "</li>";
-//     });
-//     output+= "</ul>";
-//  });
-//  return output;
-// }
 
-//CREATE BOOKMARK IN BROWSER
-function createBookMark(){
-    retrieveCategories();
-    if(cats != null){
-        console.log(cats.length);
-        for (var i = 0; i <cats.length; i++) {
-            console.log(cat);
-            chrome.bookmarks.create({ 'parentId': bookmarkBar.id,'title': cat }, function(newFolder) {
-                console.log("added folder: " + newFolder.title);
-            });
 
-        }
-        
-    }    
-}
+//Create bookmarks
+function createBookMarks(){
 
-function retrieveCategories(){
+    //This is a async methode, always execute code after this
     chrome.storage.local.get('categories', function(result){
         items = result.categories;
         for(let i = 0; i < items.length-1; i++){
-            cats.push(items[i]);
+            cats.push(items[i]);     
         }
-    });
+        console.log(cats);
+        console.log(cats.length);
+        if(cats != null){
+            console.log(cats.length);
+            for (var i = 0; i <cats.length; i++) {
+                console.log(cats[i]);
+                chrome.bookmarks.create({'parentId': '1', 'index':i+1,'title': cats[i] }, function(newFolder) {
+                    console.log("added folder: " + newFolder.title);
+                });
+            }      
+        }     
+    });   
 }
 
 
@@ -130,7 +125,10 @@ function retrieveCategories(){
 
 
 
-//--------------------------------Everything to manage the visual ----------------------------------
+
+
+
+// //--------------------------------Everything to manage the visual ----------------------------------
 //Add new Category to the Table 
 function addCategory(){
     //init
