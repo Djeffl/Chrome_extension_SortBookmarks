@@ -1,7 +1,7 @@
 //global variables
 var listItems, items;
 
-var bookmarks = [];
+var bookmarksList = [];
 var cats = [];
 
 
@@ -21,16 +21,17 @@ document.addEventListener('DOMContentLoaded', function() {
     //for saveChangesButton => save changes made to storage
     saveChangesButton.addEventListener('click', function(){
         setCategories();
-    })
+    });
     createbookmarksButton.addEventListener('click', function(){
         createBookMarks();
-    })
+        getBookmarkList();
+    });
 });
 
 
 window.onload = function() {
     getCategories();
-    bookmarksprint();    
+    getBookmarkList();  
 }
 
 
@@ -52,6 +53,19 @@ function BookMark(){
     }
 }
 
+function CategoryMap(){
+    this.id;
+    this.parentId;
+    this.index;
+    this.children;
+    this.title;
+    this.constructor = function(id, parentId, index, children, title){
+        this.id = id;
+        this.title = title;
+        this.parentId = parentId;
+    }
+}
+
 // If in a map => open up 
 // make bookmark if node has a url
 function processNode(node) {
@@ -63,29 +77,53 @@ function processNode(node) {
     if(node.url) {
          let bookmark = new BookMark();
          bookmark.constructor(node.dateAdded, node.id, node.index, node.parentId, node.title, node.url);
-         bookmarks.push(bookmark);
+         bookmarksList.push(bookmark);
     }
 }
 
-function bookmarksprint(){
+function getBookmarkList(){
     //get the bookmarktree and use a callbackfunction to use the data
     chrome.bookmarks.getTree(function(itemTree){
         //foreach item/node (map or bookmark)
          itemTree.forEach(function(item){
-            // console.log(item);
             processNode(item);
          });
+        //  console.log(bookmarks);
     });
 }
+
+//HIER GESTOPT 
+function orderBookmarks(){
+    var sortedObjects = [][];
+    for(var i = 0; i < bookmarksList.length;i++){
+        for(let j=0;j < cats.length;j++){
+            if(bookmarksList[i].title.includes(cats[j]) || bookmarksList[i].title.includes(cats[j].toUpperCase()) || bookmarksList[i].title.includes(cats[j].toLowerCase())){
+                sortedObjects[j].append(bookmarksList[i]);
+                console.log(sortedObjects);
+                return sortedObjects;
+            }
+        }  
+    }   
+}
+function MakeBookmarksMap(){
+    var map, childs = [];
+    for (var i = 0; i <cats.length; i++) {
+
+        console.log(cats[i]);
+        map = new CategoryMap();
+        map.constructor(i, i+1, i, childs ,cats[i]);
+    }
+}
+
 
 
 //Create bookmarks
 function createBookMarks(){
 
-    //This is a async methode, always execute code after this
+    //This is a async methode, always execute code after/in this !!
     chrome.storage.local.get('categories', function(result){
         items = result.categories;
-        for(let i = 0; i < items.length-1; i++){
+        for(var i = 1; i < items.length-1; i++){
             cats.push(items[i]);     
         }
         console.log(cats);
@@ -94,9 +132,10 @@ function createBookMarks(){
             console.log(cats.length);
             for (var i = 0; i <cats.length; i++) {
                 console.log(cats[i]);
-                chrome.bookmarks.create({'parentId': '1', 'index':i+1,'title': cats[i] }, function(newFolder) {
+                chrome.bookmarks.create({'parentId': '1', 'index':i,'title': cats[i] }, function(newFolder) {
                     console.log("added folder: " + newFolder.title);
                 });
+                
             }      
         }     
     });   
