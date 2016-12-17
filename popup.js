@@ -18,7 +18,120 @@ document.addEventListener('DOMContentLoaded', function() {
     })
 });
 
-//Add new Category to the UL 
+
+window.onload = function() {
+    getCategories();
+    bookmarksprint();
+    createBookMark();
+    
+}
+
+var bookmarks = [], cats = [];
+
+function BookMark(){
+    this.dateAdded;
+    this.id;
+    this.index;
+    this.parentId;
+    this.title;
+    this.url;
+    this.constructor = function(dateAdded, id, index, parentId, title, link){
+        this.dateAdded = dateAdded;
+        this.id = id;
+        this.index = index;
+        this.parentId = parentId;
+        this.title = title;
+        this.url = link;
+    }
+}
+
+// If in a map => open up 
+// make bookmark if node has a url
+function processNode(node) {
+    // recursively process child nodes
+    if(node.children != null) {
+        node.children.forEach(function(child) { processNode(child); });
+    }
+    // print leaf nodes URLs to console
+    if(node.url) {
+         let bookmark = new BookMark();
+         bookmark.constructor(node.dateAdded, node.id, node.index, node.parentId, node.title, node.url);
+         bookmarks.push(bookmark);
+    }
+}
+
+function bookmarksprint(){
+    //get the bookmarktree and use a callbackfunction to use the data
+    chrome.bookmarks.getTree(function(itemTree){
+        //foreach item/node (map or bookmark)
+         itemTree.forEach(function(item){
+            // console.log(item);
+            processNode(item);
+         });
+    });
+}
+//Old method
+// function printBookmarks(id) {
+//   var output = "<ul>";
+//  chrome.bookmarks.getChildren(id, function(children) {
+//     children.forEach(function(bookmark) {
+//       output+= "<li>" + bookmark.name + "</li>";
+//     });
+//     output+= "</ul>";
+//  });
+//  return output;
+// }
+
+//CREATE BOOKMARK IN BROWSER
+function createBookMark(){
+    retrieveCategories();
+    if(cats != null){
+        console.log(cats.length);
+        for (var i = 0; i <cats.length; i++) {
+            console.log(cat);
+            chrome.bookmarks.create({ 'parentId': bookmarkBar.id,'title': cat }, function(newFolder) {
+                console.log("added folder: " + newFolder.title);
+            });
+
+        }
+        
+    }    
+}
+
+function retrieveCategories(){
+    chrome.storage.local.get('categories', function(result){
+        items = result.categories;
+        for(let i = 0; i < items.length-1; i++){
+            cats.push(items[i]);
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//--------------------------------Everything to manage the visual ----------------------------------
+//Add new Category to the Table 
 function addCategory(){
     //init
     var newCategory;   
@@ -107,7 +220,7 @@ function editButton(row){
     });
 }
 
-//Performance lose beacause u create everytime a new btn 
+//Performance lose because u create everytime a new btn 
 //everytime this method is called and btns are always the same
 //fix it with global variable
 function addRow(newCategory){
@@ -152,56 +265,4 @@ function getCategories() {
             listItems.appendChild(row);
         }
     }); 
-}
-
-window.onload = function() {
-    getCategories();
-  // document.getElementById("bookmarks").innerHTML = bookmarksprint() ;
-//   chrome.bookmarks.getTree(function(itemTree){
-//       itemTree.forEach(function(item){
-//           console.log(item);
-//           processNode(item);
-//       });
-//   });
-}
-
-
-
-// function processNode(node) {
-//     // recursively process child nodes
-//     if(node.children) {
-//         node.children.forEach(function(child) { processNode(child); });
-//     }
-//     // print leaf nodes URLs to console
-//     if(node.url) { console.log(node.url); }
-// }
-
-// function bookmarksprint(){
-//   return "<p>" + chrome.bookmarks.getTree(function callback(){})+ "</p>";
-// }
-
-// function printBookmarks(id) {
-//   var output = "<ul>";
-//  chrome.bookmarks.getChildren(id, function(children) {
-//     children.forEach(function(bookmark) {
-//       output+= "<li>" + bookmark.name + "</li>";
-//     });
-//     output+= "</ul>";
-//  });
-//  return output;
-// }
-function saveChanges() {
-    // Get a value saved in a form.
-    var category = textarea.value;
-    // Check that there's some code there.
-    if (!theValue) {
-        message('Error: No value specified');
-        return;
-    }
-    // Save it using the Chrome extension storage API.
-    // chrome.storage.sync.set({'Category': category}, function() {
-        chrome.storage.set({'Category': category}, function() {
-        // Notify that we saved.
-        message('Settings saved');
-    });
 }
